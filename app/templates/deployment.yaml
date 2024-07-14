@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: movies-db
+spec:
+  selector:
+    matchLabels:
+      app: movies-db 
+#   serviceName: "nginx"
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: movies-db
+    spec:
+      containers:
+      - name: postegres
+        image: postgres:12.1-alpine
+        env:
+        - name: OSTGRES_USER
+          value: movie_db_username
+        - name: POSTGRES_PASSWORD
+          value: movie_db_password
+        - name: POSTGRES_DB
+          value: movie_db_dev
+        volumeMounts:
+        - name: movies-db
+          mountPath: /var/lib/postgresql/data/
+  volumeClaimTemplates:
+  - metadata:
+      name: movies-db
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local-path
+      resources:
+        requests:
+          storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cast-db
+spec:
+  selector:
+    matchLabels:
+      app: cast-db 
+#   serviceName: "nginx"
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: cast-db
+    spec:
+      containers:
+      - name: postegres
+        image: postgres:12.1-alpine
+        env:
+        - name: OSTGRES_USER
+          value: cast_db_username
+        - name: POSTGRES_PASSWORD
+          value: cast_db_password
+        - name: POSTGRES_DB
+          value: cast_db_dev
+        volumeMounts:
+        - name: cast-db
+          mountPath: /var/lib/postgresql/data/
+  volumeClaimTemplates:
+  - metadata:
+      name: cast-db
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local-path
+      resources:
+        requests:
+          storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies
+spec:
+  selector:
+    matchLabels:
+      app: movies
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      containers:
+      - name: movies
+        image: "hazamor/jenkins-movies:latest"
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URI
+          value: postgresql://movie_db_username:movie_db_password@movies-db/movie_db_dev
+        - name: CAST_SERVICE_HOST_URL
+          value: http://movies-db:8000/api/v1/casts/
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cast
+spec:
+  selector:
+    matchLabels:
+      app: cast
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cast
+    spec:
+      containers:
+      - name: cast
+        image: "hazamor/jenkins-cast:latest"
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URI
+          value: postgresql://cast_db_username:cast_db_password@cast-db/cast_db_dev
