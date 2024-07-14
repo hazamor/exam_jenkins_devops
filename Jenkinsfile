@@ -4,7 +4,7 @@ DOCKER_ID = "hazamor"
 DOCKER_IMAGE = "examen-jenkins"
 DOCKER_TAG = "v.${BUILD_ID}.0" // 
 }
-agent any // Jenkins will be able to select all available agents 
+agent any // Jenkins will be able to select all available agents
 stages {
         stage(' Docker Build'){ // docker build image stage
             steps {
