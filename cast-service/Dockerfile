@@ -13,4 +13,4 @@ RUN pip install -r /app/requirements.txt \
 
 COPY . /app/
 
-CMD sh -c uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+CMD sh -c "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"

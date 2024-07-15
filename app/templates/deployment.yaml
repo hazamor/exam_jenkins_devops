@@ -145,10 +145,12 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: ngnix-config
-          mountPath: /etc/nginx/conf.d/default.conf
-    volume:
-    - name: ngnix-config
-      hostPath:
-        path: ./nginx_config.conf
-        type: File
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/conf.d/
+      volumes:
+      - name: nginx-config-volume
+        configMap:
+          name: nginx-config
+          items:
+            - key: nginx.conf
+              path: default.conf
