@@ -11,3 +11,35 @@ spec:
   clusterIP: None
   selector:
     app: movies-db
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cast-db-service
+  labels:
+    app: cast-db-service
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  clusterIP: None
+  selector:
+    app: cast-db
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ngnix-service
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 8080
+  selector:
+    app: ngnix
+
