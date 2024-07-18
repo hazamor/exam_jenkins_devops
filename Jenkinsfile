@@ -11,7 +11,7 @@ stages {
             steps {
                 script {
                 sh '''
-                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest" ./movies-service
+                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest" ./movie-service
                  docker tag "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest" "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:DOCKER_TAG"
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_CAST:latest" ./cast-service
                  docker tag "$DOCKER_ID/$DOCKER_IMAGE_CAST:latest" "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG"
