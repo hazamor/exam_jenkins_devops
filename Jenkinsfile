@@ -23,7 +23,7 @@ stages {
                 steps {
                     script {
                     sh '''
-                    docker run -d -p 8001:8000 --name castcontainer "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest"
+                    docker run -d -p 8001:8000 --name moviescontainer "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest"
                     docker run -d -p 8002:8000 --name castcontainer "$DOCKER_ID/$DOCKER_IMAGE_CAST:latest"
                     sleep 10
                     curl localhost:8001
@@ -46,7 +46,8 @@ stages {
                 script {
                 sh '''
                 docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+                docker push "$DOCKER_ID/$DOCKER_IMAGE_MOVIE:DOCKER_TAG"
+                docker push "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG"
                 '''
                 }
             }
