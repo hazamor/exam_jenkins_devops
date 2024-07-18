@@ -3,8 +3,8 @@ environment {
 DOCKER_ID = "hazamor" 
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
-DOCKER_TAG = "v.${BUILD_ID}.0" // 
-ENV_NAME = "${env.BRANCH_NAME == "develop" ? "staging" : "production"}"
+GIT_TAG = "v.${BUILD_ID}.0" // 
+DOCKER_TAG = "${env.TAG_NAME != null ? $GIT_TAG : $GIT_COMMIT}"
 }
 
 agent any // Jenkins will be able to select all available agents
@@ -13,7 +13,7 @@ stages {
             steps {
                 script {
                 sh '''
-                 echo $ENV_NAME
+                 echo $DOCKER_TAG
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
