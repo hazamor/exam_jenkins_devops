@@ -1,0 +1,244 @@
+variables:
+  KUBE_NAMESPACE_DEV: dev #manually deploy on dev for a feature branch
+  KUBE_NAMESPACE_QA: qa # automatically deploy on QA when merging on main or push directly on main
+  KUBE_NAMESPACE_STAGING: staging #automatically deploy on staging when creating tag with verion number with postfix "rc-", example: v1.2.0-rc 
+  KUBE_NAMESPACE_PROD: prod #manually deploy on prod when creating tag
+  IP_DEV: 18.201.90.230
+  IP_QA: 18.201.90.230
+  IP_STAGING: 18.201.90.230
+  IP_PROD: 18.201.90.230
+  NODEPORT_DEV: 30000
+  NODEPORT_QA: 30001
+  NODEPORT_STAGING: 30002
+  NODEPORT_PROD: 30003
+  FASTAPI_DOCKER_REPOSITORY: hazamor/fastapi
+  REGISTER_USER: $CI_REGISTRY_USER 
+
+image:
+  name: "python:3.7.7"
+  entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - test
+  - build
+  - run
+  - push
+  - deploy_dev
+  - deploy_qa
+  - deploy_staging
+  - deploy_prod
+
+test:
+  stage: test
+  image: python:3.7.7
+  script:
+    - sudo apt-get install -y python3-pip
+    - pip install -r gateway/requirements.txt
+    - pip install fastapi
+    - pip install pytest
+    - pip install httpx
+    # - cd app/
+    # - python3 -m pytest
+
+build:
+  stage: build
+  script:
+    - docker build -t "$FASTAPI_DOCKER_REPOSITORY:latest-for-gateway" ./gateway
+    - docker tag "$FASTAPI_DOCKER_REPOSITORY:latest-for-gateway" "$FASTAPI_DOCKER_REPOSITORY:$CI_COMMIT_SHORT_SHA-for-gateway"
+    # I used the same repository for gateway, orders and users because the free acount is limited to one private ripository
+    - docker build -t "$FASTAPI_DOCKER_REPOSITORY:latest-for-orders" ./orders
+    - docker tag "$FASTAPI_DOCKER_REPOSITORY:latest-for-orders" "$FASTAPI_DOCKER_REPOSITORY:$CI_COMMIT_SHORT_SHA-for-orders"
+    - docker build -t "$FASTAPI_DOCKER_REPOSITORY:latest-for-users" ./users
+    - docker tag "$FASTAPI_DOCKER_REPOSITORY:latest-for-users" "$FASTAPI_DOCKER_REPOSITORY:$CI_COMMIT_SHORT_SHA-for-users"
+
+run:
+  stage: run
+  script:
+    - docker run -d -p 8001:8000 --name gateway "$FASTAPI_DOCKER_REPOSITORY:latest-for-gateway"
+    - sleep 10
+    - curl localhost:8001
+    - docker stop gateway
+    - docker rm gateway
+
+push:
+  stage: push
+  before_script:
+    - docker info
+    - echo $REGISTER_USER
+    - echo $CI_REGISTRY_USER 
+    - echo $CI_REGISTRY
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    # I used the same repository for gateway, orders and users because the free acount is limited to one private ripository
+    - docker push "$FASTAPI_DOCKER_REPOSITORY:$CI_COMMIT_SHORT_SHA-for-gateway"
+    - if [ ! -z "$CI_COMMIT_TAG" ]; then docker push "$FASTAPI_DOCKER_REPOSITORY:latest-for-gateway"; fi
+    - docker push "$FASTAPI_DOCKER_REPOSITORY:$CI_COMMIT_SHORT_SHA-for-orders"
+    - if [ ! -z "$CI_COMMIT_TAG" ]; then docker push "$FASTAPI_DOCKER_REPOSITORY:latest-for-orders"; fi
+    - docker push "$FASTAPI_DOCKER_REPOSITORY:$CI_COMMIT_SHORT_SHA-for-users"
+    - if [ ! -z "$CI_COMMIT_TAG" ]; then docker push "$FASTAPI_DOCKER_REPOSITORY:latest-for-users"; fi
+
+
+# ################## DEV : for each feature branch but manually######################
+stop_dev:
+  stage: deploy_dev
+  variables:
+    NAMESPACE: dev
+  when: manual
+  only:
+    refs:
+      - /^feature/.*$/
+  environment:
+    name: dev-$CI_BUILD_REF_NAME
+    action: stop
+  script:
+    - sudo helm uninstall fastapi -n $NAMESPACE
+
+
+deploy_dev:
+  image: docker:latest
+  environment:
+    name: dev-$CI_BUILD_REF_NAME
+    url: http://$IP_DEV:$NODEPORT_DEV
+    on_stop: stop_dev
+  stage: deploy_dev
+  when: manual
+  only:
+    refs:
+      - /^feature/.*$/
+  variables:
+    NAMESPACE: $KUBE_NAMESPACE_DEV
+  script:
+    - rm -Rf .kube
+    - mkdir .kube
+    - ls
+    - cat $KUBE_CONFIG > .kube/config
+    - cp fastapi/values.yml values.yml
+    - cat values.yml
+    - sudo helm upgrade --install fastapi fastapi/ --values=fastapi/values.yml --namespace $NAMESPACE 
+       --set image.gateway.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.gateway.tag="$CI_COMMIT_SHORT_SHA-for-gateway" 
+       --set services.gateway.nodePort="$NODEPORT_DEV" 
+       --set image.users.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.users.tag="$CI_COMMIT_SHORT_SHA-for-users" 
+       --set image.orders.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.orders.tag="$CI_COMMIT_SHORT_SHA-for-orders" 
+
+
+
+# ################## QA : automatically deploy en QA when merging on master######################
+
+stop_qa:
+  stage: deploy_qa
+  variables:
+    NAMESPACE: qa
+  when: manual
+  only:
+    refs:
+      - main
+  environment:
+    name: qa-$CI_BUILD_REF_NAME
+    action: stop
+  script:
+    - sudo helm uninstall fastapi -n $NAMESPACE
+
+deploy_qa:
+  image: docker:latest
+  environment:
+    name: qa-$CI_BUILD_REF_NAME
+    url: http://$IP_QA:$NODEPORT_QA
+    on_stop: stop_qa
+  stage: deploy_qa
+  only:
+    refs:
+      - main
+  variables:
+    NAMESPACE: $KUBE_NAMESPACE_QA
+  script:
+    - rm -Rf .kube
+    - mkdir .kube
+    - ls
+    - cat $KUBE_CONFIG > .kube/config
+    - cp fastapi/values.yml values.yml
+    - cat values.yml
+    - sudo helm upgrade --install fastapi fastapi/ --values=fastapi/values.yml --namespace $NAMESPACE 
+       --set image.gateway.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.gateway.tag="$CI_COMMIT_SHORT_SHA-for-gateway" 
+       --set services.gateway.nodePort="$NODEPORT_QA" 
+       --set image.users.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.users.tag="$CI_COMMIT_SHORT_SHA-for-users" 
+       --set image.orders.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.orders.tag="$CI_COMMIT_SHORT_SHA-for-orders" 
+
+
+
+# ################## Staging : automatically deploy on staging when creating tag with verion number with postfix "rc-", example: v1.2.0-rc ######################
+
+stop_staging:
+  stage: deploy_staging
+  variables:
+    NAMESPACE: staging
+  when: manual
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v(?:\d+.){2}(?:\d+)-rc$/
+  environment:
+    name: staging-$CI_BUILD_REF_NAME
+    action: stop
+  script:
+    - sudo helm uninstall fastapi -n $NAMESPACE
+
+deploy_staging:
+  image: docker:latest
+  environment:
+    name: staging-$CI_BUILD_REF_NAME
+    url: http://$IP_STAGING:$NODEPORT_STAGING
+    on_stop: stop_staging
+  stage: deploy_staging
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v(?:\d+.){2}(?:\d+)-rc$/
+  variables:
+    NAMESPACE: $KUBE_NAMESPACE_STAGING
+  script:
+    - rm -Rf .kube
+    - mkdir .kube
+    - ls
+    - cat $KUBE_CONFIG > .kube/config
+    - cp fastapi/values.yml values.yml
+    - cat values.yml
+    - sudo helm upgrade --install fastapi fastapi/ --values=fastapi/values.yml --namespace $NAMESPACE 
+       --set image.gateway.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.gateway.tag="$CI_COMMIT_SHORT_SHA-for-gateway" 
+       --set services.gateway.nodePort="$NODEPORT_STAGING" 
+       --set image.users.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.users.tag="$CI_COMMIT_SHORT_SHA-for-users" 
+       --set image.orders.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.orders.tag="$CI_COMMIT_SHORT_SHA-for-orders" 
+
+
+# ################## Prod : #manually deploy on prod when creating tag with verion number , example: v1.2.0 ######################
+
+deploy_prod:
+  image: docker:latest
+  environment:
+    name: prod-$CI_BUILD_REF_NAME
+    url: http://$IP_PROD:$NODEPORT_PROD
+  stage: deploy_prod
+  when: manual
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v(?:\d+.){2}(?:\d+)$/
+  variables:
+    NAMESPACE: $KUBE_NAMESPACE_PROD
+  script:
+    - rm -Rf .kube
+    - mkdir .kube
+    - ls
+    - cat $KUBE_CONFIG > .kube/config
+    - cp fastapi/values.yml values.yml
+    - cat values.yml
+    - sudo helm upgrade --install fastapi fastapi/ --values=fastapi/values.yml --namespace $NAMESPACE 
+       --set image.gateway.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.gateway.tag="$CI_COMMIT_SHORT_SHA-for-gateway" 
+       --set services.gateway.nodePort="$NODEPORT_PROD" 
+       --set image.users.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.users.tag="$CI_COMMIT_SHORT_SHA-for-users" 
+       --set image.orders.repository="$FASTAPI_DOCKER_REPOSITORY" 
+       --set image.orders.tag="$CI_COMMIT_SHORT_SHA-for-orders" 
