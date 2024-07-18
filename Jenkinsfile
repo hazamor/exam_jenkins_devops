@@ -11,6 +11,8 @@ stages {
             steps {
                 script {
                 sh '''
+                 docker rm -f moviescontainer
+                 docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest" ./movie-service
                  docker tag "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest" "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:DOCKER_TAG"
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_CAST:latest" ./cast-service
@@ -28,8 +30,6 @@ stages {
                     sleep 10
                     curl localhost:8001
                     curl localhost:8002
-                    docker rm -f moviescontainer
-                    docker rm -f castcontainer
                     '''
                     }
                 }
