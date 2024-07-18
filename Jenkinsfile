@@ -13,10 +13,8 @@ stages {
                 sh '''
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
-                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest" ./movie-service
-                 docker tag "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest" "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:DOCKER_TAG"
-                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_CAST:latest" ./cast-service
-                 docker tag "$DOCKER_ID/$DOCKER_IMAGE_CAST:latest" "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG"
+                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:DOCKER_TAG" ./movie-service
+                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG" ./cast-service
                 '''
                 }
             }
@@ -25,20 +23,18 @@ stages {
                 steps {
                     script {
                     sh '''
-                    docker run -d -p 8001:8000 --name moviescontainer "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:latest"
-                    docker run -d -p 8002:8000 --name castcontainer "$DOCKER_ID/$DOCKER_IMAGE_CAST:latest"
+                    docker run -d -p 8001:8000 --name moviescontainer "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:DOCKER_TAG"
+                    docker run -d -p 8002:8000 --name castcontainer "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG"
                     sleep 10
-                    curl localhost:8001
-                    curl localhost:8002
                     '''
                     }
                 }
             }
 
-        stage('Docker Push'){ //we pass the built image to our docker hub account 
+        stage('Docker Push'){ 
             environment
             {
-                DOCKER_PASS = credentials("DOCKER_HUB_PASS") // we retrieve  docker password from secret text called docker_hub_pass saved on jenkins
+                DOCKER_PASS = credentials("DOCKER_HUB_PASS")
             }
 
             steps {
