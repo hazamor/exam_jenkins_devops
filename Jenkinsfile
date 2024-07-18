@@ -4,13 +4,16 @@ DOCKER_ID = "hazamor"
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
 DOCKER_TAG = "v.${BUILD_ID}.0" // 
+ENV_NAME = "${env.BRANCH_NAME == "develop" ? "staging" : "production"}"
 }
+
 agent any // Jenkins will be able to select all available agents
 stages {
         stage(' Docker Build'){ // docker build image stage 
             steps {
                 script {
                 sh '''
+                 echo $ENV_NAME
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
