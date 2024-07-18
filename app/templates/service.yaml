@@ -1,34 +1,32 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: movies-db-service
+  name: moviesdbservice
 spec:
+  type: NodePort
   ports:
   - port: 5432
-    targetPort: 5432
-  clusterIP: None
   selector:
-    app: movies-db
+    app: moviesdb
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: cast-db-service
+  name: castdbservice
 spec:
+  type: NodePort
   ports:
-  - port: 5430
-    targetPort: 5432
-  clusterIP: None
+  - port: 5432
   selector:
-    app: cast-db
+    app: castdb
 
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: movies-service
+  name: moviesservice
 spec:
   selector:
     app: movies
@@ -41,7 +39,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: cast-service
+  name: castservice
 spec:
   selector:
     app: cast
@@ -53,7 +51,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
+  name: nginxservice
 spec:
   type: NodePort
   ports:

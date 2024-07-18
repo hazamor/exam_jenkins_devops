@@ -1,17 +1,16 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: movies-db
+  name: moviesdb
 spec:
-  serviceName: movies-db-service
   selector:
     matchLabels:
-      app: movies-db 
+      app: moviesdb
   replicas: 1 
   template:
     metadata:
       labels:
-        app: movies-db
+        app: moviesdb
     spec:
       containers:
       - name: postegres
@@ -27,18 +26,11 @@ spec:
           value: movie_db_dev
         - name: POSTGRES_HOST_AUTH_METHOD
           value: trust
-        volumeMounts:
-        - name: movies-db
-          mountPath: /var/lib/postgresql/data/
-  volumeClaimTemplates:
-  - metadata:
-      name: movies-db
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: local-path
-      resources:
-        requests:
-          storage: 1Gi
+        volumes:
+          - name: moviesdb
+            persistentVolumeClaim:
+              claimName: myclaim
+            mountPath: /var/lib/postgresql/data/
 
 ---
 apiVersion: apps/v1
@@ -62,25 +54,24 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URI
-          value: postgresql://movie_db_username:movie_db_password@movies-db-service:5432/movie_db_dev
+          value: postgresql://movie_db_username:movie_db_password@moviesdbservice:5432/movie_db_dev
         - name: CAST_SERVICE_HOST_URL
-          value: http://cast-service:5200/api/v1/casts/
+          value: http://castservice:5200/api/v1/casts/
 
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: cast-db
+  name: castdb
 spec:
-  serviceName: cast-db-service
   selector:
     matchLabels:
-      app: cast-db 
+      app: castdb 
   replicas: 1 
   template:
     metadata:
       labels:
-        app: cast-db
+        app: castdb
     spec:
       containers:
       - name: postegres
@@ -94,18 +85,12 @@ spec:
           value: cast_db_password
         - name: POSTGRES_DB
           value: cast_db_dev
-        volumeMounts:
-        - name: cast-db
-          mountPath: /var/lib/postgresql/data/
-  volumeClaimTemplates:
-  - metadata:
-      name: cast-db
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: local-path
-      resources:
-        requests:
-          storage: 1Gi
+        volumes:
+          - name: castdb
+            persistentVolumeClaim:
+              claimName: myclaim
+            mountPath: /var/lib/postgresql/data/
+
 
 ---
 apiVersion: apps/v1
@@ -129,7 +114,7 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URI
-          value: postgresql://cast_db_username:cast_db_password@cast-db-service:5430/cast_db_dev
+          value: postgresql://cast_db_username:cast_db_password@castdbservice:5432/cast_db_dev
 
 
 ---
