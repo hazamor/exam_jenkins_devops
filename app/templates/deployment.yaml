@@ -3,6 +3,7 @@ kind: StatefulSet
 metadata:
   name: movies-db
 spec:
+  serviceName: movies-db-service
   selector:
     matchLabels:
       app: movies-db 
@@ -15,13 +16,17 @@ spec:
       containers:
       - name: postegres
         image: postgres:12.1-alpine
+        ports:
+            - containerPort: 5432
         env:
-        - name: OSTGRES_USER
+        - name: POSTGRES_USER
           value: movie_db_username
         - name: POSTGRES_PASSWORD
           value: movie_db_password
         - name: POSTGRES_DB
           value: movie_db_dev
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: trust
         volumeMounts:
         - name: movies-db
           mountPath: /var/lib/postgresql/data/
@@ -57,9 +62,9 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URI
-          value: postgresql://movie_db_username:movie_db_password@movies-db/movie_db_dev
+          value: postgresql://movie_db_username:movie_db_password@movies-db-service:5432/movie_db_dev
         - name: CAST_SERVICE_HOST_URL
-          value: http://movies-db:8000/api/v1/casts/
+          value: http://cast-service:5200/api/v1/casts/
 
 ---
 apiVersion: apps/v1
@@ -67,6 +72,7 @@ kind: StatefulSet
 metadata:
   name: cast-db
 spec:
+  serviceName: cast-db-service
   selector:
     matchLabels:
       app: cast-db 
@@ -79,8 +85,10 @@ spec:
       containers:
       - name: postegres
         image: postgres:12.1-alpine
+        ports:
+            - containerPort: 5432
         env:
-        - name: OSTGRES_USER
+        - name: POSTGRES_USER
           value: cast_db_username
         - name: POSTGRES_PASSWORD
           value: cast_db_password
@@ -121,14 +129,14 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URI
-          value: postgresql://cast_db_username:cast_db_password@cast-db/cast_db_dev
+          value: postgresql://cast_db_username:cast_db_password@cast-db-service:5430/cast_db_dev
 
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ngnix
+  name: nginx
 spec:
   selector:
     matchLabels:
