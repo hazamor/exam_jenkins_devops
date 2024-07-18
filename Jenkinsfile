@@ -4,7 +4,7 @@ DOCKER_ID = "hazamor"
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
 DOCKER_TAG = "v.${BUILD_ID}.0" // 
-D_TAG = "${$TAG_NAME != null ? $DOCKER_TAG : $GIT_COMMIT}"
+D_TAG = "${$TAG_NAME != '' ? $DOCKER_TAG : $GIT_COMMIT}"
 }
 
 agent any // Jenkins will be able to select all available agents
