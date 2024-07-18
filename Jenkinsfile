@@ -13,8 +13,8 @@ stages {
                 sh '''
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
-                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:DOCKER_TAG" ./movie-service
-                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG" ./cast-service
+                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
+                 docker build -t "$DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG" ./cast-service
                 '''
                 }
             }
@@ -23,8 +23,8 @@ stages {
                 steps {
                     script {
                     sh '''
-                    docker run -d -p 8001:8000 --name moviescontainer "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:DOCKER_TAG"
-                    docker run -d -p 8002:8000 --name castcontainer "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG"
+                    docker run -d -p 8001:8000 --name moviescontainer "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG"
+                    docker run -d -p 8002:8000 --name castcontainer "$DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG"
                     sleep 10
                     '''
                     }
@@ -42,8 +42,8 @@ stages {
                 script {
                 sh '''
                 docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push "$DOCKER_ID/$DOCKER_IMAGE_MOVIE:DOCKER_TAG"
-                docker push "$DOCKER_ID/$DOCKER_IMAGE_CAST:DOCKER_TAG"
+                docker push "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG"
+                docker push "$DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG"
                 '''
                 }
             }
