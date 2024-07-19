@@ -49,7 +49,7 @@ spec:
     spec:
       containers:
       - name: movies
-        image: "hazamor/jenkins-movies:latest"
+        image: {{ .Values.image.movies.repository }}:{{ .Values.image.movies.tag }}
         ports:
         - containerPort: 8000
         env:
@@ -109,7 +109,7 @@ spec:
     spec:
       containers:
       - name: cast
-        image: "hazamor/jenkins-cast:latest"
+        image: {{ .Values.image.cast.repository }}:{{ .Values.image.cast.tag }}
         ports:
         - containerPort: 8000
         env:

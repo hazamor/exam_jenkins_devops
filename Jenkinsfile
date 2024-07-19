@@ -3,35 +3,15 @@ environment {
 DOCKER_ID = "hazamor" 
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
-DOCKER_TAG = "v.${BUILD_ID}.0" // 
-D_TAG = "v.${BUILD_ID}.0"
-BRANCH_NAME="$BRANCH_NAME"
+DOCKER_TAG = "v.${BUILD_ID}.0"
 }
 
 agent any // Jenkins will be able to select all available agents
 stages {
-        stage(' Set env vars'){ 
-            when {
-                expression {
-                    return env.GIT_BRANCH == "origin/main"
-                }
-            }
-            environment {
-                D_TAG = "$GIT_COMMIT"
-            }
-            steps {
-                 sh 'echo $D_TAG'
-            }
-        }
         stage(' Docker Build'){ // docker build image stage 
             steps {
                 script {
                 sh '''
-                 echo $D_TAG
-                 echo $BRANCH_NAME
-                 echo $GIT_COMMIT
-                 echo $CHANGE_BRANCH
-                 echo $GIT_BRANCH
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
@@ -71,6 +51,28 @@ stages {
 
         }
 
+        stage('Deploiement en dev'){
+            environment
+            {
+            KUBECONFIG = credentials("config") 
+            }
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                helm upgrade --install app ./app --values=./app/values.yaml --namespace $NAMESPACE 
+                --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" 
+                --set image.movies.tag="$DOCKER_TAG"  
+                --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" 
+                --set image.cast.tag="$DOCKER_TAG" 
+                '''
+                }
+            }
+
+        }
     
 }
 }
