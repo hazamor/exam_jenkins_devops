@@ -12,7 +12,9 @@ agent any // Jenkins will be able to select all available agents
 stages {
         stage(' Set env vars'){ 
             when {
-                branch 'main'
+                expression {
+                    return env.GIT_BRANCH == "origin/main"
+                }
             }
             environment {
                 D_TAG = "$GIT_COMMIT"
