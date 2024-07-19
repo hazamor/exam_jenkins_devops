@@ -25,7 +25,7 @@ stages {
                 script {
                 sh '''
                  echo $D_TAG
-                 echo BRANCH_NAME
+                 echo $BRANCH_NAME
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
