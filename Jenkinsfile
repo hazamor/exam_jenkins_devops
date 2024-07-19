@@ -20,7 +20,7 @@ stages {
                 D_TAG = "$GIT_COMMIT"
             }
             steps {
-                 sh 'print $D_TAG'
+                 sh 'echo $D_TAG'
             }
         }
         stage(' Docker Build'){ // docker build image stage 
