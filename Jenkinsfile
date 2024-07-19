@@ -14,7 +14,7 @@ stages {
                 branch 'master'
             }
             environment {
-                D_TAG = $GIT_COMMIT
+                D_TAG = "$GIT_COMMIT"
             }
             steps {
                  sh 'print $D_TAG'
