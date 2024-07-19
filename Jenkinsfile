@@ -63,7 +63,7 @@ stages {
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                helm upgrade --install app ./app --values=./app/values.yaml --namespace $NAMESPACE 
+                helm upgrade --install app ./app --values=./app/values.yaml --namespace dev
                 --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" 
                 --set image.movies.tag="$DOCKER_TAG"  
                 --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" 
