@@ -70,7 +70,7 @@ stages {
                 --set image.cast.tag="$DOCKER_TAG" 
                 '''
                 }
-            }
+            } 
 
         }
     
