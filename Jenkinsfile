@@ -28,6 +28,8 @@ stages {
                  echo $D_TAG
                  echo $BRANCH_NAME
                  echo $GIT_COMMIT
+                 echo $CHANGE_BRANCH
+                 echo $GIT_BRANCH
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
