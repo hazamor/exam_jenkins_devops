@@ -5,13 +5,14 @@ DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
 DOCKER_TAG = "v.${BUILD_ID}.0" // 
 D_TAG = "v.${BUILD_ID}.0"
+BRANCH_NAME="$BRANCH_NAME"
 }
 
 agent any // Jenkins will be able to select all available agents
 stages {
         stage(' Set env vars'){ 
             when {
-                branch 'origin/main'
+                branch 'main'
             }
             environment {
                 D_TAG = "$GIT_COMMIT"
@@ -26,6 +27,7 @@ stages {
                 sh '''
                  echo $D_TAG
                  echo $BRANCH_NAME
+                 echo $GIT_COMMIT
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
