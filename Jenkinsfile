@@ -4,7 +4,7 @@ DOCKER_ID = "hazamor"
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
 DOCKER_TAG = "v.${BUILD_ID}.0"
-TEST_TAG = "${env.BRANCH_NAME}"
+TEST_TAG = "${$GIT_BRANCH == 'origin/master' ? 'MASTER' : 'RELEASE'}"
 }
 
 agent any // Jenkins will be able to select all available agents
@@ -14,9 +14,8 @@ stages {
                 script {
                 sh '''
                  echo $TEST_TAG
-                 echo $BRANCH_NAME
                  echo $GIT_BRANCH
-                 echo $GIT_LOCAL_BRANCH
+                 echo $TAG_NAME
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
