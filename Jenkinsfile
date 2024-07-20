@@ -4,7 +4,7 @@ DOCKER_ID = "hazamor"
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
 DOCKER_TAG = "v.${BUILD_ID}.0"
-TEST_TAG = "${env.BRANCH_NAME == 'master' ? 'MASTER' : 'RELEASE'}"
+TEST_TAG = "${env.BRANCH_NAME}"
 }
 
 agent any // Jenkins will be able to select all available agents
