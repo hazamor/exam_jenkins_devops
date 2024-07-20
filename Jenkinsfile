@@ -7,7 +7,7 @@ DOCKER_TAG = "v.${BUILD_ID}.0"
 TEST_TAG = "${$GIT_BRANCH == 'origin/master' ? 'MASTER' : 'RELEASE'}"
 }
 
-agent any // Jenkins will be able to select all available agents
+agent any // Jenkins will be able to select all available agents 
 stages {
         stage(' Docker Build'){ // docker build image stage 
             steps {
