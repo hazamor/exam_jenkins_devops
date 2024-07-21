@@ -3,8 +3,7 @@ environment {
 DOCKER_ID = "hazamor" 
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
-DOCKER_TAG = "v.${BUILD_ID}.0"
-TEST_TAG = "${env.GIT_BRANCH != 'main' ? 'lastest' : env.DOCKER_TAG}"
+DOCKER_TAG = "${env.GIT_BRANCH == 'main' ? 'lastest' : env.GIT_COMMIT}"
 } 
 
 agent any // Jenkins will be able to select all available agents 
