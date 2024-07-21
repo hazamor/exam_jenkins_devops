@@ -13,9 +13,7 @@ stages {
                 script {
                 sh '''
                 
-                 echo $TEST_TAG
-                 echo $GIT_BRANCH
-                 echo $TAG_NAME
+                 echo "DOCKER_TAG = ${DOCKER_TAG}"
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
                  docker build -t "$DOCKER_ID/$DOCKER_IMAGE_MOVIES:$DOCKER_TAG" ./movie-service
