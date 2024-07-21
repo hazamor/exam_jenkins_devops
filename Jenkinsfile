@@ -12,7 +12,6 @@ stages {
             steps {
                 script {
                 sh '''
-                
                  echo "DOCKER_TAG = ${DOCKER_TAG}"
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
@@ -59,6 +58,10 @@ stages {
             KUBECONFIG = credentials("config") 
             }
             steps {
+                 timeout(time: 15, unit: "MINUTES") {
+                        input message: 'Do you want to deploy in dev ?', ok: 'Yes'
+                }
+
                 script {
                 sh '''
                 rm -Rf .kube
