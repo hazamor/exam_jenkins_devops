@@ -1,5 +1,9 @@
 pipeline {
 environment {
+NODE_PORT_DEV = 30001
+NODE_PORT_QA = 30002
+NODE_PORT_STAGING = 30003
+NODE_PORT_PROD = 30004
 DOCKER_ID = "hazamor" 
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
@@ -76,7 +80,8 @@ stages {
                 --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" \
                 --set image.movies.tag="$DOCKER_TAG"  \
                 --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" \
-                --set image.cast.tag="$DOCKER_TAG" 
+                --set image.cast.tag="$DOCKER_TAG" \
+                --set service.nginxservice.nodeport="$NODE_PORT_DEV" 
                 '''
                 }
             } 
@@ -104,7 +109,8 @@ stages {
                 --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" \
                 --set image.movies.tag="$DOCKER_TAG"  \
                 --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" \
-                --set image.cast.tag="$DOCKER_TAG" 
+                --set image.cast.tag="$DOCKER_TAG" \
+                --set service.nginxservice.nodeport="$NODE_PORT_QA" 
                 '''
                 }
             } 

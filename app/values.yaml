@@ -6,11 +6,11 @@ replicaCount: 1
 
 image:
   movies:
-    repository: nginx
+    repository: ""
     pullPolicy: IfNotPresent
     tag: ""
   cast:
-    repository: nginx
+    repository: ""
     pullPolicy: IfNotPresent
     tag: ""
 
@@ -44,8 +44,8 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
-  port: 80
+  nginxservice:
+    nodeport: ""
 
 ingress:
   enabled: false
