@@ -86,7 +86,9 @@ stages {
             }
 
             when {
-                branch 'main'
+                expression {
+                  env.GIT_BRANCH == 'main' 
+                }
             }
 
             steps {
