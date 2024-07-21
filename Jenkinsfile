@@ -86,7 +86,7 @@ stages {
             }
 
             when {
-                expression { BRANCH_NAME ==~ /(main|staging)/ }
+                expression { GIT_BRANCH ==~ /(main|staging)/ }
             }
 
             steps {
