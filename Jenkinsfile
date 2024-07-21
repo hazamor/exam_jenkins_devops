@@ -57,6 +57,10 @@ stages {
             {
                 KUBECONFIG = credentials("config") 
             }
+
+            when {
+                expression { GIT_BRANCH ==~ /(feature)/ }
+            }
             steps {
                  timeout(time: 15, unit: "MINUTES") {
                         input message: 'Do you want to deploy in dev ?', ok: 'Yes'
