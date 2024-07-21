@@ -55,7 +55,7 @@ stages {
         stage('Deploy dev'){
             environment
             {
-            KUBECONFIG = credentials("config") 
+                KUBECONFIG = credentials("config") 
             }
             steps {
                  timeout(time: 15, unit: "MINUTES") {
@@ -78,6 +78,35 @@ stages {
             } 
 
         }
-    
+
+        stage('Deploy QA'){
+            environment
+            {
+                KUBECONFIG = credentials("config") 
+            }
+
+            when {
+                branch 'main'
+            }
+
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                helm upgrade --install app ./app --values=./app/values.yaml --namespace qa\
+                --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" \
+                --set image.movies.tag="$DOCKER_TAG"  \
+                --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" \
+                --set image.cast.tag="$DOCKER_TAG" 
+                '''
+                }
+            } 
+
+        }
+
+
 }
 }
