@@ -4,8 +4,8 @@ DOCKER_ID = "hazamor"
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
 DOCKER_TAG = "v.${BUILD_ID}.0"
-TEST_TAG = "${$GIT_BRANCH == 'origin/master' ? 'MASTER' : 'RELEASE'}"
-}
+TEST_TAG = "${$GIT_BRANCH == 'origin/master' ? 'lastest' : 'RELEASE'}"
+} 
 
 agent any // Jenkins will be able to select all available agents 
 stages {
