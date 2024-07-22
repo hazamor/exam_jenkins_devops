@@ -7,7 +7,7 @@ NODE_PORT_PROD = 30004
 DOCKER_ID = "hazamor" 
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
-DOCKER_TAG = "${env.GIT_BRANCH == *"release"* ? 'lastest' : env.GIT_COMMIT}"
+DOCKER_TAG = "${env.GIT_BRANCH ==~ /(mai)/ ? 'lastest' : env.GIT_COMMIT}"
 } 
 
 agent any // Jenkins will be able to select all available agents 
