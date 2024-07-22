@@ -97,7 +97,7 @@ stages {
             }
 
             when {
-                expression { GIT_BRANCH ==~ /(main)/ }
+                expression { GIT_BRANCH ==~ /.*main.*/ }
             }
 
             steps {
