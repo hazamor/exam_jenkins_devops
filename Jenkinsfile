@@ -1,6 +1,6 @@
 pipeline {
 environment {
-NODE_PORT_DEV = 30001 // deploy manually in dev when it is feature brach
+NODE_PORT_DEV = 30001 // deploy manually in dev when it is feature brach - ex: feature/add-order-form
 NODE_PORT_QA = 30002 // deploy automatically in qa when it is the main brach
 NODE_PORT_STAGING = 30003 // deploy automatically in staging when it is release brach (name like release)
 NODE_PORT_PROD = 30004 // deploy manually in prod when it is release brach (name like release)
