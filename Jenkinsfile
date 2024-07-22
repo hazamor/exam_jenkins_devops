@@ -16,6 +16,8 @@ stages {
             steps {
                 script {
                 sh '''
+                 echo $GIT_BRANCH
+                 echo $TAG_NAME
                  echo "DOCKER_TAG = ${DOCKER_TAG}"
                  docker rm -f moviescontainer
                  docker rm -f castcontainer
