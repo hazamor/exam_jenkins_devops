@@ -1,18 +1,18 @@
 pipeline {
 environment {
-NODE_PORT_DEV = 30001
-NODE_PORT_QA = 30002
-NODE_PORT_STAGING = 30003
-NODE_PORT_PROD = 30004
+NODE_PORT_DEV = 30001 // deploy manually in dev when it is feature brach
+NODE_PORT_QA = 30002 // deploy automatically in qa when it is the main brach
+NODE_PORT_STAGING = 30003 // deploy automatically in staging when it is release brach (name like release)
+NODE_PORT_PROD = 30004 // deploy manually in prod when it is release brach (name like release)
 DOCKER_ID = "hazamor" 
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
 DOCKER_TAG = "${env.GIT_BRANCH ==~ /.*release.*/ ? 'lastest' : env.GIT_COMMIT}"
 } 
 
-agent any // Jenkins will be able to select all available agents 
+agent any 
 stages {
-        stage(' Docker Build'){ // docker build image stage 
+        stage(' Docker Build'){
             steps {
                 script {
                 sh '''
@@ -27,7 +27,7 @@ stages {
                 }
             }
         }
-        stage('Docker run'){ // run container from our builded image
+        stage('Docker run'){ 
                 steps {
                     script {
                     sh '''
@@ -58,7 +58,7 @@ stages {
 
         }
 
-        stage('Deploy dev'){
+        stage('Deploy dev'){ // deploy manually in dev when it is feature brach
             environment
             {
                 KUBECONFIG = credentials("config") 
@@ -90,7 +90,7 @@ stages {
 
         }
 
-        stage('Deploy QA'){
+        stage('Deploy QA'){ // deploy automatically in qa when it is the main brach
             environment
             {
                 KUBECONFIG = credentials("config") 
@@ -119,7 +119,7 @@ stages {
 
         }
 
-        stage('Deploy staging'){
+        stage('Deploy staging'){  // deploy automatically in staging when it is release brach (name like release)
             environment
             {
                 KUBECONFIG = credentials("config") 
@@ -149,7 +149,7 @@ stages {
         }
 
 
-        stage('Deploy prod'){
+        stage('Deploy prod'){ // deploy manually in prod when it is release brach (name like release)
             environment
             {
                 KUBECONFIG = credentials("config") 
