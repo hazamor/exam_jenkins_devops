@@ -7,7 +7,7 @@ NODE_PORT_PROD = 30004
 DOCKER_ID = "hazamor" 
 DOCKER_IMAGE_MOVIES = "jenkins-movies"
 DOCKER_IMAGE_CAST = "jenkins-cast"
-DOCKER_TAG = "${env.GIT_BRANCH == 'main' ? 'lastest' : env.GIT_COMMIT}"
+DOCKER_TAG = "${env.GIT_BRANCH ==~ /(main)/ ? 'lastest' : env.GIT_COMMIT}"
 } 
 
 agent any // Jenkins will be able to select all available agents 
@@ -119,6 +119,64 @@ stages {
 
         }
 
+        stage('Deploy staging'){
+            environment
+            {
+                KUBECONFIG = credentials("config") 
+            }
+
+            when {
+                expression { GIT_BRANCH ==~ /(release)/ }
+            }
+
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                helm upgrade --install app ./app --values=./app/values.yaml --namespace qa\
+                --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" \
+                --set image.movies.tag="$DOCKER_TAG"  \
+                --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" \
+                --set image.cast.tag="$DOCKER_TAG" \
+                --set service.nginxservice.nodeport="$NODE_PORT_STAGING" 
+                '''
+                }
+            } 
+
+        }
+
+
+        stage('Deploy staging'){
+            environment
+            {
+                KUBECONFIG = credentials("config") 
+            }
+
+            when {
+                expression { GIT_BRANCH ==~ /(release)/ }
+            }
+
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                helm upgrade --install app ./app --values=./app/values.yaml --namespace qa\
+                --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" \
+                --set image.movies.tag="$DOCKER_TAG"  \
+                --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" \
+                --set image.cast.tag="$DOCKER_TAG" \
+                --set service.nginxservice.nodeport="$NODE_PORT_PROD" 
+                '''
+                }
+            } 
+
+        }
 
 }
 }
