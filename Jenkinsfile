@@ -65,7 +65,7 @@ stages {
             }
 
             when {
-                expression { GIT_BRANCH ==~ /(feature)/ }
+                expression { GIT_BRANCH ==~ /.*feature.*/ }
             }
             steps {
                  timeout(time: 15, unit: "MINUTES") {
