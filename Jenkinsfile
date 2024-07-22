@@ -136,7 +136,7 @@ stages {
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                helm upgrade --install app ./app --values=./app/values.yaml --namespace qa\
+                helm upgrade --install app ./app --values=./app/values.yaml --namespace staging\
                 --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" \
                 --set image.movies.tag="$DOCKER_TAG"  \
                 --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" \
@@ -149,7 +149,7 @@ stages {
         }
 
 
-        stage('Deploy staging'){
+        stage('Deploy prod'){
             environment
             {
                 KUBECONFIG = credentials("config") 
@@ -166,7 +166,7 @@ stages {
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                helm upgrade --install app ./app --values=./app/values.yaml --namespace qa\
+                helm upgrade --install app ./app --values=./app/values.yaml --namespace prod\
                 --set image.movies.repository="$DOCKER_ID/$DOCKER_IMAGE_MOVIES" \
                 --set image.movies.tag="$DOCKER_TAG"  \
                 --set image.cast.repository="$DOCKER_ID/$DOCKER_IMAGE_CAST" \
